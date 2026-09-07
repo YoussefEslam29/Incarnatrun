@@ -63,6 +63,23 @@ export interface SurfaceVertex {
 }
 
 /**
+ * A mesh bound to the avatar skeleton.
+ *
+ * The body and every garment share this shape and the same rig, which is what
+ * lets clothing be exported as extra primitives on one skinned mesh rather than
+ * as separate objects that have to be re-rigged.
+ */
+export interface SkinnedMesh {
+  positions: Float32Array;
+  normals: Float32Array;
+  uvs: Float32Array;
+  joints: Uint8Array;
+  weights: Float32Array;
+  indices: Uint32Array;
+  parts: MeshPart[];
+}
+
+/**
  * A named group of vertices sharing one set of candidate bones.
  *
  * Restricting skinning to a declared candidate set is what stops a hand vertex

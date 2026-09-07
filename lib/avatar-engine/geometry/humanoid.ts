@@ -16,21 +16,14 @@ import {
   buildEllipsoid,
   buildTube,
   MeshAccumulator,
-  type MeshPart,
   type Ring,
+  type SkinnedMesh,
 } from "./mesh";
 import { boneIndexByName, type Skeleton } from "./skeleton";
 import { computeSkinWeights } from "./skinning";
 import type { BodyParams, FaceParams } from "../params";
 
-export interface HumanoidMesh {
-  positions: Float32Array;
-  normals: Float32Array;
-  uvs: Float32Array;
-  joints: Uint8Array;
-  weights: Float32Array;
-  indices: Uint32Array;
-  parts: MeshPart[];
+export interface HumanoidMesh extends SkinnedMesh {
   /** Head centre and radii, so the texture pipeline can frame the face. */
   head: { center: Vec3; radii: Vec3 };
 }

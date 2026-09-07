@@ -1,5 +1,5 @@
 /**
- * Packs a generated humanoid into a rigged GLB.
+ * Packs a generated humanoid, and anything it is wearing, into a rigged GLB.
  *
  * Node layout:
  *
@@ -11,18 +11,33 @@
  * of it. Parenting it under a joint applies that joint's transform twice: once
  * through the node graph and once through the skin, which makes the avatar
  * drift away from its skeleton the moment an animation plays.
+ *
+ * The body and each garment become separate primitives on that one mesh, all
+ * sharing the same skin. A Mixamo animation therefore moves the avatar and its
+ * clothes together with no separate cloth rig.
  */
 
 import { GltfBuilder } from "./gltf/builder";
-import type { GltfPrimitive } from "./gltf/types";
+import type { GltfMaterial, GltfPrimitive } from "./gltf/types";
+import type { SkinnedMesh } from "./geometry/mesh";
 import type { HumanoidMesh } from "./geometry/humanoid";
 import { MIXAMO_BONES, type Skeleton } from "./geometry/skeleton";
+
+export interface GarmentLayer {
+  name: string;
+  mesh: SkinnedMesh;
+  /** PNG bytes. When absent the garment is a flat tint. */
+  texture?: Uint8Array;
+  /** Hex tint, used as the base colour factor. */
+  colorHex: string;
+}
 
 export interface BuildAvatarGlbOptions {
   mesh: HumanoidMesh;
   skeleton: Skeleton;
-  /** PNG bytes for the skin/face atlas. Optional. */
+  /** PNG bytes for the skin and face atlas. Optional. */
   texture?: Uint8Array;
+  garments?: GarmentLayer[];
   name?: string;
   /** Copied into the glTF `extras` block for traceability. */
   extras?: Record<string, unknown>;
@@ -30,31 +45,49 @@ export interface BuildAvatarGlbOptions {
 
 export const GENERATOR = "Incarnatrun builtin avatar engine";
 
+/** #rrggbb to a linear-ish 0..1 RGBA factor. */
+function hexToFactor(hex: string): [number, number, number, number] {
+  const value = hex.replace("#", "");
+  const channel = (i: number) => parseInt(value.slice(i, i + 2), 16) / 255;
+  // glTF base colour factors are linear; sRGB hex needs converting or every
+  // garment reads noticeably brighter in the viewer than the swatch that
+  // produced it.
+  const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return [toLinear(channel(0)), toLinear(channel(2)), toLinear(channel(4)), 1];
+}
+
 export function buildAvatarGlb(options: BuildAvatarGlbOptions): Uint8Array {
-  const { mesh, skeleton, texture, name = "Avatar" } = options;
+  const { mesh, skeleton, texture, garments = [], name = "Avatar" } = options;
 
   const builder = new GltfBuilder({ generator: GENERATOR });
 
-  // --- Vertex data ---------------------------------------------------------
-  const position = builder.addVec3Accessor(mesh.positions, {
-    computeBounds: true,
-    name: "POSITION",
-  });
-  const normal = builder.addVec3Accessor(mesh.normals, { name: "NORMAL" });
-  const texcoord = builder.addVec2Accessor(mesh.uvs, { name: "TEXCOORD_0" });
-  const joints = builder.addJointsAccessor(mesh.joints, { name: "JOINTS_0" });
-  const weights = builder.addVec4Accessor(mesh.weights, { name: "WEIGHTS_0" });
+  /** Adds one skinned mesh's attributes and returns a primitive for it. */
+  function addPrimitive(source: SkinnedMesh, material: number, label: string): GltfPrimitive {
+    const vertexCount = source.positions.length / 3;
 
-  // Uint16 would be enough for the current vertex budget, but the count grows
-  // with the geometry constants, so pick the width from the actual data.
-  const vertexCount = mesh.positions.length / 3;
-  const indices = builder.addIndicesAccessor(
-    vertexCount > 65535 ? mesh.indices : Uint16Array.from(mesh.indices),
-    { name: "indices" },
-  );
+    return {
+      attributes: {
+        POSITION: builder.addVec3Accessor(source.positions, {
+          computeBounds: true,
+          name: `${label}_POSITION`,
+        }),
+        NORMAL: builder.addVec3Accessor(source.normals, { name: `${label}_NORMAL` }),
+        TEXCOORD_0: builder.addVec2Accessor(source.uvs, { name: `${label}_TEXCOORD_0` }),
+        JOINTS_0: builder.addJointsAccessor(source.joints, { name: `${label}_JOINTS_0` }),
+        WEIGHTS_0: builder.addVec4Accessor(source.weights, { name: `${label}_WEIGHTS_0` }),
+      },
+      // Uint16 covers the current budget, but the geometry constants can grow,
+      // so pick the index width from the actual vertex count.
+      indices: builder.addIndicesAccessor(
+        vertexCount > 65535 ? source.indices : Uint16Array.from(source.indices),
+        { name: `${label}_indices` },
+      ),
+      material,
+    };
+  }
 
-  // --- Material ------------------------------------------------------------
-  const materialIndex = builder.addMaterial({
+  // --- Body ----------------------------------------------------------------
+  const skinMaterial: GltfMaterial = {
     name: "AvatarSkin",
     pbrMetallicRoughness: {
       baseColorFactor: [1, 1, 1, 1],
@@ -66,21 +99,40 @@ export function buildAvatarGlb(options: BuildAvatarGlbOptions): Uint8Array {
     },
     doubleSided: false,
     alphaMode: "OPAQUE",
-  });
-
-  const primitive: GltfPrimitive = {
-    attributes: {
-      POSITION: position,
-      NORMAL: normal,
-      TEXCOORD_0: texcoord,
-      JOINTS_0: joints,
-      WEIGHTS_0: weights,
-    },
-    indices,
-    material: materialIndex,
   };
 
-  const meshIndex = builder.addMesh([primitive], "AvatarBody");
+  const primitives: GltfPrimitive[] = [
+    addPrimitive(mesh, builder.addMaterial(skinMaterial), "body"),
+  ];
+
+  // --- Garments ------------------------------------------------------------
+  for (const [index, garment] of garments.entries()) {
+    const material = builder.addMaterial({
+      name: garment.name,
+      pbrMetallicRoughness: {
+        // With a texture present the factor must stay white, or the tint
+        // multiplies into the user's photo and muddies it.
+        baseColorFactor: garment.texture ? [1, 1, 1, 1] : hexToFactor(garment.colorHex),
+        metallicFactor: 0,
+        roughnessFactor: 0.82,
+        ...(garment.texture
+          ? {
+              baseColorTexture: {
+                index: builder.addTexture(garment.texture, "image/png", `${garment.name}Texture`),
+              },
+            }
+          : {}),
+      },
+      // Cloth is thin; showing its inside face avoids holes when the camera
+      // passes through a sleeve.
+      doubleSided: true,
+      alphaMode: "OPAQUE",
+    });
+
+    primitives.push(addPrimitive(garment.mesh, material, `garment${index}`));
+  }
+
+  const meshIndex = builder.addMesh(primitives, "AvatarBody");
 
   // --- Joint nodes ---------------------------------------------------------
   // glTF stores children on the parent; the bone table stores the parent on the
