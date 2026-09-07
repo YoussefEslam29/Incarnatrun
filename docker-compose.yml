@@ -1,0 +1,29 @@
+# Local Postgres for development.
+#
+#   docker compose up -d
+#   npm run db:push
+#
+# Then DATABASE_URL in .env should be:
+#   postgresql://incarnatrun:incarnatrun@localhost:5432/incarnatrun?schema=public
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: incarnatrun-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: incarnatrun
+      POSTGRES_PASSWORD: incarnatrun
+      POSTGRES_DB: incarnatrun
+    ports:
+      - "5432:5432"
+    volumes:
+      - incarnatrun-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U incarnatrun -d incarnatrun"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  incarnatrun-pgdata:

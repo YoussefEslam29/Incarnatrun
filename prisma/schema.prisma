@@ -1,0 +1,213 @@
+// Incarnatrun — Phase 1 schema.
+//
+// Shape follows docs/superpowers/specs/2026-09-07-incarnatrun-mvp-design.md §4:
+//   User 1-n Avatar 1-n AvatarVersion, and User 1-n Garment.
+//
+// Editing an avatar never mutates a version. It appends a new AvatarVersion and
+// repoints Avatar.currentVersionId. That is what makes avatars re-editable
+// rather than one-shot, and it gives us edit history for free.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth.js tables
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Set only for the credentials provider. Null for OAuth-only users.
+  passwordHash String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  avatars  Avatar[]
+  garments Garment[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Avatars
+// ---------------------------------------------------------------------------
+
+enum CreationPath {
+  // Path A in idea.md §1 — full body derived from a full-body photo.
+  FULL_BODY
+  // Path B — face only, attached to a random pre-made body template.
+  FACE_ONLY
+}
+
+enum AvatarStatus {
+  PENDING
+  GENERATING
+  READY
+  FAILED
+}
+
+model Avatar {
+  id     String @id @default(cuid())
+  userId String
+
+  name   String       @default("Untitled avatar")
+  path   CreationPath
+  status AvatarStatus @default(PENDING)
+
+  // Populated when status is FAILED, so the editor can explain what went wrong
+  // instead of showing an empty canvas.
+  failureReason String?
+
+  // Which engine produced this avatar, and that engine's own id for it.
+  // Recorded per avatar so switching providers later does not orphan old data.
+  engineProvider String  @default("builtin")
+  engineAssetId  String?
+
+  // Storage key of the photo the user uploaded.
+  sourcePhotoKey String?
+
+  currentVersionId String?         @unique
+  currentVersion   AvatarVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions         AvatarVersion[] @relation("AvatarVersions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@map("avatars")
+}
+
+model AvatarVersion {
+  id       String @id @default(cuid())
+  avatarId String
+  version  Int
+
+  // Immutable snapshot of every editor parameter. Validated by the Zod schemas
+  // in lib/avatar-engine/params.ts before it is ever written.
+  bodyParams Json
+  faceParams Json
+
+  // Garment slot -> garment id. Slots: TOP, BOTTOM, SHOES, HAIR, ACCESSORY.
+  outfit Json @default("{}")
+
+  // Storage key of the rigged GLB for this exact parameter set.
+  modelKey    String?
+  thumbnailKey String?
+
+  createdAt DateTime @default(now())
+
+  avatar        Avatar  @relation("AvatarVersions", fields: [avatarId], references: [id], onDelete: Cascade)
+  currentOf     Avatar? @relation("CurrentVersion")
+
+  @@unique([avatarId, version])
+  @@index([avatarId])
+  @@map("avatar_versions")
+}
+
+// ---------------------------------------------------------------------------
+// Clothing
+// ---------------------------------------------------------------------------
+
+enum GarmentSlot {
+  TOP
+  BOTTOM
+  SHOES
+  HAIR
+  ACCESSORY
+}
+
+enum GarmentSource {
+  // Built-in wardrobe item.
+  TEMPLATE
+  // idea.md §6 Option A — user photo UV-mapped onto a template garment mesh.
+  PHOTO_TEXTURE
+  // idea.md §6 Option C — user uploaded their own 3D garment file.
+  USER_MESH
+}
+
+// A garment is ALWAYS {meshRef, textureRef}. This is the explicit requirement
+// from idea.md §6 so that Phase 2 AI garment reconstruction (Option B) only has
+// to supply a generated meshRef instead of a template one, with no refactor.
+model Garment {
+  id     String  @id @default(cuid())
+  userId String?
+
+  name   String
+  slot   GarmentSlot
+  source GarmentSource
+
+  // Template mesh identifier (e.g. "crew-tee") or a storage key for an
+  // uploaded mesh. Which one it is follows from `source`.
+  meshRef String
+
+  // Storage key of the texture, or null to use the template's default.
+  textureRef String?
+
+  // Tint applied when there is no texture.
+  colorHex String @default("#8b5cf6")
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([slot])
+  @@map("garments")
+}
