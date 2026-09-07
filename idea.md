@@ -1,4 +1,6 @@
-# Project: Selfie-to-3D-Avatar Platform
+# INCARNATRUN
+
+**Repo**: https://github.com/YoussefEslam29/Incarnatrun
 
 ## 1. Project Overview
 
@@ -18,6 +20,10 @@ Blender/3D work, and (future) 3D printing.
 This is a **planning document for Claude Code**. It intentionally mixes
 product intent with technical direction so an AI coding agent can start
 building without needing a separate back-and-forth to infer the stack.
+
+> **Repo state**: as of writing, the repo contains only a placeholder
+> `README.md` — no scaffolding yet. Claude Code is starting from a clean
+> slate and should begin with Phase 1, Step 1 in the checklist (§13).
 
 ---
 
@@ -71,7 +77,7 @@ building without needing a separate back-and-forth to infer the stack.
 | Database | PostgreSQL (e.g. via Supabase or Neon) | Relational fits well: users, avatars, avatar versions, credits/billing, orders — all clearly relational entities |
 | File/asset storage | S3-compatible storage or Vercel Blob | Store generated GLB/FBX files and uploaded photos/clothing textures |
 | Hosting | Vercel | Matches Next.js, easy preview deploys |
-| Version control | GitHub | Standard, clean commit history per feature |
+| Version control | GitHub — [YoussefEslam29/Incarnatrun](https://github.com/YoussefEslam29/Incarnatrun) | Standard, clean commit history per feature |
 
 > **Decision needed from the vendor evaluation**: pick one avatar-generation
 > vendor before Phase 1 coding starts (cost per generation, license terms,
