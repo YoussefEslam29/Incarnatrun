@@ -109,7 +109,7 @@ export interface AddVersionInput {
  * Appends a new version and makes it current.
  *
  * Editing never mutates an existing version. That is what makes avatars
- * re-editable rather than one-shot, per idea.md section 3, and it gives edit
+ * re-editable rather than one-shot, per PLAN/idea.md section 3, and it gives edit
  * history for nothing.
  */
 export async function addAvatarVersion(input: AddVersionInput) {

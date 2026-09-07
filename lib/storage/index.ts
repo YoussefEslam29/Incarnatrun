@@ -3,7 +3,7 @@
  *
  * `local` writes under ./.data/storage and needs no credentials, so the whole
  * app runs on a fresh clone with nothing configured. `vercel-blob` and `s3`
- * are the deployment options from idea.md section 4. Callers never learn which
+ * are the deployment options from PLAN/idea.md section 4. Callers never learn which
  * is active.
  *
  * Keys look like `avatars/<avatarId>/v3/model.glb`. They are built by the

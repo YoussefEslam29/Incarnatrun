@@ -8,7 +8,7 @@
  *
  * Every garment is addressed as {meshRef, textureRef}. A template supplies the
  * meshRef from this registry; an uploaded 3D file supplies a storage key
- * instead. That indirection is the requirement from idea.md section 6 and is
+ * instead. That indirection is the requirement from PLAN/idea.md section 6 and is
  * what lets Phase 2 AI garment reconstruction slot in with no refactor.
  */
 
@@ -134,7 +134,6 @@ function buildTop(ctx: GarmentBuildContext, options: TopOptions): SkinnedMesh {
     for (const side of ["Left", "Right"] as const) {
       const shoulder = pos(skeleton, `mixamorig:${side}Shoulder`);
       const arm = pos(skeleton, `mixamorig:${side}Arm`);
-      const foreArm = pos(skeleton, `mixamorig:${side}ForeArm`);
       const hand = pos(skeleton, `mixamorig:${side}Hand`);
 
       const reach = lerp(arm[0], hand[0], options.sleeve);

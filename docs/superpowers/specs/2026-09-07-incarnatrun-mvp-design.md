@@ -1,26 +1,26 @@
 # Incarnatrun — Phase 1 (MVP) Design
 
 **Date**: 2026-09-07
-**Source of truth**: `idea.md` — product scope was fixed with the user there.
+**Source of truth**: `PLAN/idea.md` — product scope was fixed with the user there.
 
-This document turns that scope into an implementable technical design. Where `idea.md`
+This document turns that scope into an implementable technical design. Where `PLAN/idea.md`
 left a decision open, this document closes it and says why.
 
 ---
 
 ## 1. Goal
 
-Ship the Phase 1 MVP from `idea.md` §13: a user signs in, uploads a photo, gets a rigged
+Ship the Phase 1 MVP from `PLAN/idea.md` §13: a user signs in, uploads a photo, gets a rigged
 3D avatar, edits face/body/clothes in the browser, and downloads a Blender-ready file.
 
 Explicitly out of scope: cartoon style mode, 3D-print export, the Blender add-on, AI
-garment reconstruction, and billing. Each is Phase 2 in `idea.md` §7 and §13.
+garment reconstruction, and billing. Each is Phase 2 in `PLAN/idea.md` §7 and §13.
 
 ---
 
 ## 2. The blocking decision, and how we unblock it
 
-`idea.md` §4 and §12 flag one blocker: **no avatar-generation vendor has been chosen**.
+`PLAN/idea.md` §4 and §12 flag one blocker: **no avatar-generation vendor has been chosen**.
 Vendor choice depends on cost, license, export rights and embeddability. That is a
 business decision, not an engineering one.
 
@@ -55,7 +55,7 @@ a reference implementation that defines exactly what a vendor adapter must retur
 
 ## 3. Architecture
 
-Follows `idea.md` §5, with module boundaries made explicit.
+Follows `PLAN/idea.md` §5, with module boundaries made explicit.
 
 ```
 app/
@@ -115,9 +115,9 @@ Avatar      n-1 AvatarVersion (currentVersion)
 - `Avatar` holds identity and the pointer to the current version.
 - `AvatarVersion` holds an immutable snapshot: body params, face params, garment
   assignments, and the generated asset keys. Editing creates a new version. This is what
-  makes avatars re-editable rather than one-shot per `idea.md` §3.2, and it gives history
+  makes avatars re-editable rather than one-shot per `PLAN/idea.md` §3.2, and it gives history
   for free.
-- `Garment` is always `{ meshRef, textureRef }` per the explicit note in `idea.md` §6, so
+- `Garment` is always `{ meshRef, textureRef }` per the explicit note in `PLAN/idea.md` §6, so
   Phase 2 AI reconstruction only has to supply a different `meshRef`.
 
 Auth.js tables (`Account`, `Session`, `VerificationToken`) come from the Prisma adapter.
@@ -154,7 +154,7 @@ POST /api/export -> load current version -> exportAs(format) -> store -> signed 
 ```
 
 `exportAs` is a registry keyed by format. Adding `print-ready` later means registering one
-more formatter. Nothing else is touched, per the `idea.md` §7 note.
+more formatter. Nothing else is touched, per the `PLAN/idea.md` §7 note.
 
 ---
 
@@ -173,7 +173,7 @@ straight into Mixamo or Blender.
 
 ## 7. Error handling
 
-Per `idea.md` §15, without exception.
+Per `PLAN/idea.md` §15, without exception.
 
 - Every Server Action returns `{ success: boolean; message: string; data?: T }`. A shared
   `ActionResult<T>` type and an `action()` wrapper enforce this and convert thrown errors
@@ -201,12 +201,12 @@ Per `idea.md` §15, without exception.
 
 ## 9. Theming, branding, language
 
-- Dark is the **default**, light is the toggle per `idea.md` §10. `next-themes` with
+- Dark is the **default**, light is the toggle per `PLAN/idea.md` §10. `next-themes` with
   `defaultTheme="dark"`, plus shadcn CSS variable tokens so both palettes stay in step.
-- Logo is **hand-coded SVG** per `idea.md` §9: a head silhouette resolving into a wireframe
+- Logo is **hand-coded SVG** per `PLAN/idea.md` §9: a head silhouette resolving into a wireframe
   polygon mesh, blue to purple gradient, dark-first. Ships as a React component, a favicon,
   and a header wordmark lockup.
-- English only. No i18n scaffolding, per `idea.md` §11.
+- English only. No i18n scaffolding, per `PLAN/idea.md` §11.
 
 ---
 

@@ -88,7 +88,7 @@ model VerificationToken {
 // ---------------------------------------------------------------------------
 
 enum CreationPath {
-  // Path A in idea.md §1 — full body derived from a full-body photo.
+  // Path A in PLAN/idea.md §1 — full body derived from a full-body photo.
   FULL_BODY
   // Path B — face only, attached to a random pre-made body template.
   FACE_ONLY
@@ -176,14 +176,14 @@ enum GarmentSlot {
 enum GarmentSource {
   // Built-in wardrobe item.
   TEMPLATE
-  // idea.md §6 Option A — user photo UV-mapped onto a template garment mesh.
+  // PLAN/idea.md §6 Option A — user photo UV-mapped onto a template garment mesh.
   PHOTO_TEXTURE
-  // idea.md §6 Option C — user uploaded their own 3D garment file.
+  // PLAN/idea.md §6 Option C — user uploaded their own 3D garment file.
   USER_MESH
 }
 
 // A garment is ALWAYS {meshRef, textureRef}. This is the explicit requirement
-// from idea.md §6 so that Phase 2 AI garment reconstruction (Option B) only has
+// from PLAN/idea.md §6 so that Phase 2 AI garment reconstruction (Option B) only has
 // to supply a generated meshRef instead of a template one, with no refactor.
 model Garment {
   id     String  @id @default(cuid())

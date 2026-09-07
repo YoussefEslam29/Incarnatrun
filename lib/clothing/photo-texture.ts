@@ -1,5 +1,5 @@
 /**
- * Option A from idea.md section 6: put the user's real garment on the avatar by
+ * Option A from PLAN/idea.md section 6: put the user's real garment on the avatar by
  * using their photo as the texture on a template mesh.
  *
  * The silhouette stays the template's; the colour, print, logo and pattern

@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+/*
+  Dark is the default and light is the toggle, per idea.md section 10, so the
+  variant is written the way round that lets `:root` hold the dark palette.
+*/
+@custom-variant light (&:where(.light, .light *));
+
+/*
+  Palette: a 3D application's viewport, not a marketing page.
+
+  The ground is a cold blue-black rather than pure #000, the way professional
+  viewports are, so that dark geometry still reads against it. The blue-to-
+  violet pair from idea.md section 9 is reserved for the mark and one accent;
+  spending it as background washes is what makes a page look generic.
+
+  The axis colours are functional, not decorative. They appear only on things
+  that genuinely are the X, Y and Z axes, which is the convention every 3D tool
+  shares and the reason a creator recognises a gizmo at a glance.
+*/
+:root {
+  --void: #0a0c11;
+  --panel: #10131b;
+  --panel-raised: #161a24;
+  --line: #232838;
+  --line-bright: #333a4f;
+
+  /*
+    Text tones are pinned to measured contrast against --void, not picked by
+    eye. An audit of the first palette failed nine elements at 3.4:1 because
+    --faint looked right and was not. Ratios: chalk 16.5:1, mute 7.7:1,
+    faint 5.2:1, all clear of the 4.5:1 floor, and still three distinct steps.
+  */
+  --chalk: #e9ebf2;
+  --mute: #9aa2b6;
+  --faint: #7c8397;
+
+  --beam: #6a78ff;
+  --flare: #c063ff;
+  --beam-dim: #3b4499;
+
+  --axis-x: #ff5c6c;
+  --axis-y: #5ce08a;
+  --axis-z: #5c9bff;
+
+  --warn: #ffb454;
+  --bad: #ff6b81;
+  --good: #4ade80;
+
+  --grid: rgba(255, 255, 255, 0.04);
+}
+
+.light {
+  --void: #f6f7fa;
+  --panel: #ffffff;
+  --panel-raised: #ffffff;
+  --line: #e2e5ee;
+  --line-bright: #cbd0de;
+
+  --chalk: #12151d;
+  --mute: #545c6e;
+  --faint: #6b7385;
+
+  --beam: #4c5bef;
+  --flare: #9c37e8;
+  --beam-dim: #c3c8f8;
+
+  --grid: rgba(10, 12, 17, 0.05);
+}
+
+@theme inline {
+  --color-void: var(--void);
+  --color-panel: var(--panel);
+  --color-panel-raised: var(--panel-raised);
+  --color-line: var(--line);
+  --color-line-bright: var(--line-bright);
+  --color-chalk: var(--chalk);
+  --color-mute: var(--mute);
+  --color-faint: var(--faint);
+  --color-beam: var(--beam);
+  --color-flare: var(--flare);
+  --color-beam-dim: var(--beam-dim);
+  --color-axis-x: var(--axis-x);
+  --color-axis-y: var(--axis-y);
+  --color-axis-z: var(--axis-z);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-good: var(--good);
+
+  --font-display: var(--font-anybody), "Arial Narrow", system-ui, sans-serif;
+  --font-sans: var(--font-instrument), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-panel: 4px;
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  body {
+    background: var(--void);
+    color: var(--chalk);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+    Display type is set tight and wide. The width axis is the reason this face
+    was chosen, so it is used rather than left at its default.
+  */
+  .type-display {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 112;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 0.92;
+  }
+
+  /*
+    The utility face carries anything that is data: counts, formats, bone names,
+    file sizes. Small, wide-tracked, uppercase, the way a properties panel sets
+    a field label.
+  */
+  .type-data {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  ::selection {
+    background: var(--beam);
+    color: #fff;
+  }
+
+  /* Focus has to stay visible on every interactive thing, including custom ones. */
+  :focus-visible {
+    outline: 2px solid var(--beam);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  /*
+    The construction grid. It reads as a viewport floor rather than as
+    decoration, and it is the one ambient texture on the page.
+  */
+  .bg-grid {
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .bg-grid-fine {
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 11px 11px;
+  }
+
+  .text-gradient {
+    background: linear-gradient(100deg, var(--beam), var(--flare));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* A hairline that fades out, used to end a rule without a hard stop. */
+  .rule-fade {
+    background: linear-gradient(90deg, var(--line-bright), transparent);
+    height: 1px;
+  }
+}
+
+/*
+  The hero's wireframe-to-skin reveal is the page's one orchestrated moment.
+  Everything in it is disabled wholesale under reduced motion rather than being
+  sped up, because the effect is the motion.
+*/
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(200%);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* The R3F canvas fills its frame and never shows a scrollbar of its own. */
+canvas {
+  display: block;
+  touch-action: none;
+}

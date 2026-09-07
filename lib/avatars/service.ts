@@ -30,9 +30,9 @@ import {
 import { resolveOutfit } from "../db/garments";
 import { getStorage, storageKeys } from "../storage";
 
-/** Upload limits, enforced before anything reads the bytes. */
-export const MAX_PHOTO_BYTES = 12 * 1024 * 1024;
-export const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+import { ACCEPTED_PHOTO_TYPES, MAX_PHOTO_BYTES, type AcceptedPhotoType } from "./upload-limits";
+
+export { ACCEPTED_PHOTO_TYPES, MAX_PHOTO_BYTES };
 
 export class UploadRejected extends Error {
   constructor(message: string) {
@@ -56,7 +56,7 @@ export function assertAcceptablePhoto(file: File): void {
       `That photo is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is ${MAX_PHOTO_BYTES / 1024 / 1024} MB.`,
     );
   }
-  if (!ACCEPTED_PHOTO_TYPES.includes(file.type as (typeof ACCEPTED_PHOTO_TYPES)[number])) {
+  if (!ACCEPTED_PHOTO_TYPES.includes(file.type as AcceptedPhotoType)) {
     throw new UploadRejected(
       `${file.type || "That file type"} is not supported. Upload a JPEG, PNG or WebP image.`,
     );

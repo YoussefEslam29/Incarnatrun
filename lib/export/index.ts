@@ -1,7 +1,7 @@
 /**
  * The export pipeline: `exportAs(format, options)`.
  *
- * A registry, not a switch. idea.md section 7 asks specifically that this be
+ * A registry, not a switch. PLAN/idea.md section 7 asks specifically that this be
  * pluggable from day one so a `print-ready` formatter can be added in Phase 2
  * without touching avatar generation or the editor. Adding a format means
  * registering one more entry below; nothing else in the app changes.
@@ -130,7 +130,7 @@ export function availableFormats(): ExportFormat[] {
 /**
  * The one entry point every caller uses.
  *
- * Keeping the signature `(format, options)` exactly as idea.md section 7
+ * Keeping the signature `(format, options)` exactly as PLAN/idea.md section 7
  * specifies means the Phase 2 print formatter is a registry entry and nothing
  * more.
  */

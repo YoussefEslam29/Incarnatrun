@@ -1,7 +1,7 @@
 /**
  * The contract every avatar-generation engine implements.
  *
- * idea.md sections 4 and 12 leave the vendor undecided, and that decision is
+ * PLAN/idea.md sections 4 and 12 leave the vendor undecided, and that decision is
  * commercial rather than technical: cost per generation, licence terms, export
  * rights, embeddability. This interface is how that decision stops blocking
  * anything. The built-in engine implements it fully today, and choosing a
@@ -18,7 +18,7 @@ export type GarmentSourceKind = "TEMPLATE" | "PHOTO_TEXTURE" | "USER_MESH";
 /**
  * A garment ready to be worn, always as a mesh reference plus a texture
  * reference. Keeping this shape for every source is the requirement from
- * idea.md section 6: Phase 2 AI reconstruction only has to supply a different
+ * PLAN/idea.md section 6: Phase 2 AI reconstruction only has to supply a different
  * meshRef.
  */
 export interface ResolvedGarment {

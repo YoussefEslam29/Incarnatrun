@@ -3,7 +3,7 @@
  *
  * Generates a rigged, Mixamo-compatible GLB locally, with no vendor API and no
  * credentials. That is what lets the whole product be built, demonstrated and
- * shipped while the vendor decision in idea.md section 12 is still open, and it
+ * shipped while the vendor decision in PLAN/idea.md section 12 is still open, and it
  * doubles as the reference definition of what any vendor adapter must return.
  */
 
@@ -67,7 +67,7 @@ export class BuiltinAvatarEngine implements AvatarEngineProvider {
     }
 
     // Path A reads the body from the photo. Path B ignores it and attaches a
-    // random pre-made body, which the user then edits, exactly as idea.md
+    // random pre-made body, which the user then edits, exactly as PLAN/idea.md
     // section 1 describes.
     let body: BodyParams;
     if (input.path === "FULL_BODY") {
@@ -134,7 +134,7 @@ export class BuiltinAvatarEngine implements AvatarEngineProvider {
     for (const garment of input.garments) {
       try {
         if (garment.source === "USER_MESH") {
-          // idea.md section 6, Option C: the user's own 3D garment file, fitted
+          // PLAN/idea.md section 6, Option C: the user's own 3D garment file, fitted
           // and skinned onto this avatar's skeleton.
           if (!garment.meshFile) {
             warnings.push(`The file for "${garment.name}" is missing, so it was left off.`);

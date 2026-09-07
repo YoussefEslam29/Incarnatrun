@@ -1,8 +1,8 @@
 /**
- * Adapters for the third-party avatar vendors idea.md section 4 shortlists.
+ * Adapters for the third-party avatar vendors PLAN/idea.md section 4 shortlists.
  *
  * These are deliberately unimplemented. Which vendor to use is an open
- * commercial question (idea.md section 12): cost per generation, licence terms,
+ * commercial question (PLAN/idea.md section 12): cost per generation, licence terms,
  * export rights, and whether their editor embeds in our own UI or only works as
  * their hosted widget. Guessing at an API we have not signed up for would mean
  * writing code against imagined request shapes that has never run.

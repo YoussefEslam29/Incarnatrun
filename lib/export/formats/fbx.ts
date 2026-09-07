@@ -4,7 +4,7 @@
  * This is the file you upload to Mixamo. The bone names come straight from
  * MIXAMO_BONES, so Mixamo's auto-rigger recognises the skeleton and every
  * Mixamo animation retargets onto it without remapping. That is the whole point
- * of the "Blender-ready" promise in idea.md section 8.
+ * of the "Blender-ready" promise in PLAN/idea.md section 8.
  *
  * Notable format differences from glTF, all of which are silent if missed:
  *

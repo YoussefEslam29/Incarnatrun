@@ -1,7 +1,7 @@
 /**
  * Fits an uploaded 3D garment onto the avatar and skins it to the rig.
  *
- * idea.md section 6 calls this "a garment-fitting/retargeting step to drape and
+ * PLAN/idea.md section 6 calls this "a garment-fitting/retargeting step to drape and
  * skin the uploaded mesh onto the avatar's body", and distinguishes it from
  * generating a garment out of thin air, which is Phase 2.
  *

@@ -1,5 +1,5 @@
 /**
- * The Server Action contract from idea.md section 15.
+ * The Server Action contract from PLAN/idea.md section 15.
  *
  * Every Server Action returns `{ success, message, data? }`. The `action()`
  * wrapper enforces it and turns anything thrown into that same shape, so an

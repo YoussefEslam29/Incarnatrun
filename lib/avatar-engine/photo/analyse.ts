@@ -9,7 +9,7 @@
  *
  * What it does NOT do is reconstruct a face or true body measurements from a
  * photo. That is the genuinely hard problem, and it is precisely what buying an
- * avatar vendor buys you (see idea.md section 4). The estimates here are honest
+ * avatar vendor buys you (see PLAN/idea.md section 4). The estimates here are honest
  * heuristics that give a good starting point which the user then edits, and the
  * vendor adapters can replace them wholesale without touching anything else.
  */

@@ -21,7 +21,7 @@ const unit = z.number().min(0).max(1);
 // ---------------------------------------------------------------------------
 
 /**
- * Pre-made body templates. Path B in idea.md attaches a random one of these to
+ * Pre-made body templates. Path B in PLAN/idea.md attaches a random one of these to
  * a reconstructed face, and the user then edits it.
  */
 export const BODY_TEMPLATES = [

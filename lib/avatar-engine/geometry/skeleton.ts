@@ -2,7 +2,7 @@
  * The avatar skeleton.
  *
  * Bone names are Mixamo's exactly, because that is the whole point of the
- * "Blender-ready" promise in idea.md section 8: a file whose rig uses these
+ * "Blender-ready" promise in PLAN/idea.md section 8: a file whose rig uses these
  * names can be dropped into Mixamo for auto-animation, and every Mixamo
  * animation retargets onto it without remapping.
  *

@@ -1,5 +1,5 @@
 /**
- * Option C from idea.md section 6: let a user upload their own 3D garment.
+ * Option C from PLAN/idea.md section 6: let a user upload their own 3D garment.
  *
  * Supported formats are OBJ and glTF/GLB. FBX is detected and refused with a
  * specific instruction rather than a generic failure: parsing binary FBX is a
