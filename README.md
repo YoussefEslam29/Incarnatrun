@@ -28,6 +28,12 @@ npm run dev
 
 Open http://localhost:3000, create an account, and upload a photo.
 
+If you would rather not fill in a form:
+
+```bash
+npm run db:seed     # demo@incarnatrun.local / incarnatrun-demo
+```
+
 Nothing else needs configuring. Storage defaults to the local filesystem under
 `.data/storage`, and the avatar engine defaults to the built-in one, which needs
 no API key.

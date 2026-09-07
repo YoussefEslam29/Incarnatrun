@@ -58,10 +58,12 @@ export function renderAvatarSvg(options: ThumbnailOptions): string {
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
 
-  // Full-figure framing fits the whole height; portrait framing zooms on the
-  // top fifth, which is where the face the user actually recognises is.
-  const visibleHeight = portrait ? height * 0.26 : height * 1.04;
-  const baseline = portrait ? height * 1.005 : height * 1.02;
+  // Full-figure framing fits the whole height with room to breathe; portrait
+  // framing zooms on the top fifth, which is where the face the user actually
+  // recognises is. The margin is deliberate: a figure that touches the edges of
+  // its card reads as cropped rather than as framed.
+  const visibleHeight = portrait ? height * 0.3 : height * 1.18;
+  const baseline = portrait ? height * 1.02 : height * 1.09;
   const scale = size / visibleHeight;
 
   const painted: string[] = [];
@@ -105,8 +107,11 @@ export function renderAvatarSvg(options: ThumbnailOptions): string {
       const rnx = (nx * cos + nz * sin) / 3;
       const rnz = (-nx * sin + nz * cos) / 3;
 
+      // A generous ambient floor, because a card sitting on a dark dashboard
+      // needs the silhouette to read at a glance more than it needs contrast
+      // between its own facets.
       const lambert = Math.max(0, rnx * LIGHT[0] + (ny / 3) * LIGHT[1] + rnz * LIGHT[2]);
-      const level = 0.3 + lambert * 0.8;
+      const level = 0.46 + lambert * 0.72;
       const rgb = [tr, tg, tb].map((ch) => Math.round(Math.min(255, ch * level))).join(",");
 
       triangles.push({
