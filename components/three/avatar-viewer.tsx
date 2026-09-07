@@ -18,112 +18,21 @@
 import * as React from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, GizmoHelper, GizmoViewport, Grid, OrbitControls, useGLTF } from "@react-three/drei";
-import * as THREE from "three";
+import { prepareModel, type ViewerStats } from "@/lib/three/prepare-model";
 import { cn } from "@/lib/utils";
 
-export interface ViewerStats {
-  vertices: number;
-  triangles: number;
-  bones: number;
-}
+/*
+  Scene preparation lives in lib/three so it can be tested in Node. It is pure
+  scene-graph work with no WebGL, and the first version of it recursed until the
+  stack ran out; nothing that only renders in a browser would have caught that.
+*/
+export type { ViewerStats };
 
 interface ModelProps {
   url: string;
   reveal: boolean;
   onStats: (stats: ViewerStats) => void;
   onError: (message: string) => void;
-}
-
-interface PreparedModel {
-  scene: THREE.Group | null;
-  wireMaterials: THREE.MeshBasicMaterial[];
-  skinMaterials: THREE.MeshStandardMaterial[];
-  stats: ViewerStats;
-  error: string | null;
-}
-
-/**
- * Clones the loaded scene, collects the materials the reveal animates, and
- * counts what the overlay reports.
- *
- * Done in a memo rather than an effect writing into refs. The animation frame
- * then mutates values that were never part of an effect's dependencies, which
- * is both what React's rules want and simpler to follow: there is one place
- * where the scene is prepared and one place where it is animated.
- *
- * The clone matters: useGLTF caches by URL, so mutating the original would leak
- * material changes into every other mount of the same model.
- */
-function prepareModel(source: THREE.Group, reveal: boolean): PreparedModel {
-  const empty: ViewerStats = { vertices: 0, triangles: 0, bones: 0 };
-
-  let scene: THREE.Group;
-  try {
-    scene = source.clone(true);
-  } catch (error) {
-    return {
-      scene: null,
-      wireMaterials: [],
-      skinMaterials: [],
-      stats: empty,
-      error: error instanceof Error ? error.message : "That model could not be read.",
-    };
-  }
-
-  const wireMaterials: THREE.MeshBasicMaterial[] = [];
-  const skinMaterials: THREE.MeshStandardMaterial[] = [];
-  let vertices = 0;
-  let triangles = 0;
-  let bones = 0;
-
-  scene.traverse((object) => {
-    if (object instanceof THREE.Bone) bones++;
-    if (!(object instanceof THREE.Mesh)) return;
-
-    vertices += object.geometry.attributes.position?.count ?? 0;
-    triangles += object.geometry.index ? object.geometry.index.count / 3 : 0;
-
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
-    for (const material of materials) {
-      if (material instanceof THREE.MeshStandardMaterial) {
-        material.transparent = reveal;
-        material.opacity = reveal ? 0 : 1;
-        skinMaterials.push(material);
-      }
-    }
-
-    if (!reveal) return;
-
-    // A second, wireframe copy of the same geometry, drawn over the skin and
-    // faded out as the skin fades in.
-    const wire = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#6a78ff"),
-      wireframe: true,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-    });
-
-    const overlay =
-      object instanceof THREE.SkinnedMesh
-        ? new THREE.SkinnedMesh(object.geometry, wire)
-        : new THREE.Mesh(object.geometry, wire);
-
-    if (overlay instanceof THREE.SkinnedMesh && object instanceof THREE.SkinnedMesh) {
-      overlay.bind(object.skeleton, object.bindMatrix);
-    }
-    overlay.renderOrder = 2;
-    object.add(overlay);
-    wireMaterials.push(wire);
-  });
-
-  return {
-    scene,
-    wireMaterials,
-    skinMaterials,
-    stats: { vertices, triangles: Math.round(triangles), bones },
-    error: null,
-  };
 }
 
 function Model({ url, reveal, onStats, onError }: ModelProps) {

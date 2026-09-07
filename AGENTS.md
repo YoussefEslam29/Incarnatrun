@@ -63,3 +63,23 @@ running on Windows; stop the dev server before building.
   the contrast floor. Use a border or a badge.
 - **Tube rings must be stacked along the axis the part runs.** Arms run along X
   and feet along Z; stacking either along Y collapses it into a flat sliver.
+- **Never add a child from inside `Object3D.traverse`.** Traverse walks
+  `children` as it goes, so the node just added gets visited too. Adding a
+  wireframe overlay this way gave every overlay its own overlay until the stack
+  ran out. Collect into an array first, mutate afterwards.
+
+## Verifying browser-only work
+
+Server-rendered HTML and an accessibility audit both pass on a page whose
+client JavaScript has thrown. The 3D viewer is client-only, so neither check
+covers it.
+
+Two things close that gap, and a change to `components/three/` or
+`lib/three/` needs both:
+
+- Keep scene-graph logic in `lib/three/`, free of React and WebGL, and unit
+  test it. `tests/prepare-model.test.ts` catches exactly the class of bug above.
+- Confirm it actually renders. The viewer writes live vertex, triangle and bone
+  counts into the DOM, so their presence is proof the canvas mounted and the
+  model loaded. Attach to a debuggable Chrome over CDP and read them back,
+  rather than assuming a 200 response means the page works.
