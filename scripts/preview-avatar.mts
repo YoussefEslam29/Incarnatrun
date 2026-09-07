@@ -166,3 +166,16 @@ console.log(`bones    : ${skeleton.bones.length}`);
 console.log(`atlas    : ${(atlas.byteLength / 1024).toFixed(1)} KB`);
 console.log(`glb      : ${(glb.byteLength / 1024).toFixed(1)} KB`);
 console.log(`written to ${outDir}`);
+
+// --- Exports, so the real output can be opened in Blender or Mixamo ---------
+const { exportAs } = await import("../lib/export/index.ts");
+
+for (const format of ["glb", "fbx"]) {
+  const result = await exportAs(
+    format,
+    { glb, mesh, skeleton, texture: atlas, garments: outfit, avatarName: "Preview Avatar" },
+    {},
+  );
+  writeFileSync(resolve(outDir, result.filename), result.bytes);
+  console.log(`export ${format.padEnd(4)}: ${result.filename} (${(result.bytes.byteLength / 1024).toFixed(1)} KB)`);
+}
