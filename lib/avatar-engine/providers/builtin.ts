@@ -31,6 +31,8 @@ import {
   type ResolvedGarment,
 } from "../types";
 import { garmentTemplate } from "../../clothing/templates";
+import { importGarmentMesh } from "../../clothing/mesh-import";
+import { fitGarmentToBody } from "../../clothing/fit";
 
 /** Smallest usable upload. Below this there is nothing to read a face from. */
 const MIN_DIMENSION = 96;
@@ -130,23 +132,55 @@ export class BuiltinAvatarEngine implements AvatarEngineProvider {
     const warnings: string[] = [];
 
     for (const garment of input.garments) {
-      const template = garmentTemplate(garment.meshRef);
+      try {
+        if (garment.source === "USER_MESH") {
+          // idea.md section 6, Option C: the user's own 3D garment file, fitted
+          // and skinned onto this avatar's skeleton.
+          if (!garment.meshFile) {
+            warnings.push(`The file for "${garment.name}" is missing, so it was left off.`);
+            continue;
+          }
 
-      if (!template) {
-        // An uploaded mesh (idea.md section 6, Option C) is fitted by
-        // lib/clothing/fit.ts before it reaches here. Anything still
-        // unresolved is a dangling reference; skip it rather than failing the
-        // whole render and leaving the user with no avatar at all.
-        warnings.push(`Could not load "${garment.name}", so it was left off.`);
-        continue;
+          const imported = importGarmentMesh(
+            new Uint8Array(garment.meshFile),
+            garment.meshFilename ?? garment.meshRef,
+          );
+          const fitted = fitGarmentToBody({
+            garment: imported,
+            slot: garment.slot,
+            skeleton,
+            body: mesh,
+          });
+
+          warnings.push(...fitted.warnings);
+          layers.push({
+            name: garment.name,
+            mesh: fitted,
+            texture: garment.texture ? new Uint8Array(garment.texture) : undefined,
+            colorHex: garment.colorHex,
+          });
+          continue;
+        }
+
+        const template = garmentTemplate(garment.meshRef);
+        if (!template) {
+          warnings.push(`Could not load "${garment.name}", so it was left off.`);
+          continue;
+        }
+
+        layers.push({
+          name: garment.name,
+          mesh: template.build({ body, skeleton }),
+          texture: garment.texture ? new Uint8Array(garment.texture) : undefined,
+          colorHex: garment.colorHex,
+        });
+      } catch (error) {
+        // One bad garment must not cost the user their whole avatar. Leave it
+        // off and say why.
+        warnings.push(
+          `Could not put on "${garment.name}": ${error instanceof Error ? error.message : "unknown error"}`,
+        );
       }
-
-      layers.push({
-        name: garment.name,
-        mesh: template.build({ body, skeleton }),
-        texture: garment.texture ? new Uint8Array(garment.texture) : undefined,
-        colorHex: garment.colorHex,
-      });
     }
 
     const glb = buildAvatarGlb({

@@ -24,7 +24,7 @@
 import { MIXAMO_BONES, type Skeleton } from "../../avatar-engine/geometry/skeleton";
 import type { SkinnedMesh } from "../../avatar-engine/geometry/mesh";
 import { translationMat4 } from "../../avatar-engine/geometry/math";
-import { createZip } from "../zip";
+import { createZip, type ZipEntry } from "../zip";
 import { safeFilename } from "../filename";
 import type { ExportOptions, ExportSource } from "../index";
 
@@ -175,7 +175,7 @@ export async function exportFbx(
   });
 
   const stem = safeFilename(options.filename ?? source.avatarName);
-  const entries = [{ name: `${stem}.fbx`, data: new TextEncoder().encode(fbx) }];
+  const entries: ZipEntry[] = [{ name: `${stem}.fbx`, data: new TextEncoder().encode(fbx) }];
 
   if (source.texture) {
     entries.push({ name: TEXTURE_FILENAME, data: source.texture });

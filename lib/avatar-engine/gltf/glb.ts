@@ -100,7 +100,10 @@ export function unpackGlb(bytes: Uint8Array): UnpackedGlb {
 
   let offset = HEADER_BYTES;
   let json: Record<string, unknown> | null = null;
-  let bin = new Uint8Array(0);
+  // Annotated rather than inferred: `subarray` on the input yields
+  // Uint8Array<ArrayBufferLike>, which will not assign to the narrower
+  // Uint8Array<ArrayBuffer> that the initialiser would otherwise infer.
+  let bin: Uint8Array = new Uint8Array(0);
 
   while (offset + CHUNK_HEADER_BYTES <= bytes.byteLength) {
     const chunkLength = view.getUint32(offset, true);

@@ -14,7 +14,7 @@
  * vendor adapters can replace them wholesale without touching anything else.
  */
 
-import sharp from "sharp";
+import sharp, { type Metadata, type Sharp } from "sharp";
 
 /** Longest edge used for analysis. Full resolution buys nothing here. */
 const ANALYSIS_SIZE = 192;
@@ -187,8 +187,8 @@ function headScore(component: Component, width: number, height: number): number 
 }
 
 export async function analysePhoto(photo: Buffer): Promise<PhotoAnalysis> {
-  let image: sharp.Sharp;
-  let meta: sharp.Metadata;
+  let image: Sharp;
+  let meta: Metadata;
 
   try {
     image = sharp(photo);

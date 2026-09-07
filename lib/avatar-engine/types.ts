@@ -30,6 +30,13 @@ export interface ResolvedGarment {
   meshRef: string;
   /** PNG bytes, already fetched from storage. */
   texture?: Buffer;
+  /**
+   * The uploaded OBJ or GLB bytes, for a USER_MESH garment. Fetched by the
+   * caller so the engine never has to know that storage exists.
+   */
+  meshFile?: Buffer;
+  /** Original filename, used only to pick a parser when the bytes are ambiguous. */
+  meshFilename?: string;
   colorHex: string;
 }
 
